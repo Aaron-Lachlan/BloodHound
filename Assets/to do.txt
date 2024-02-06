@@ -1,0 +1,23 @@
+
+to do list
+
+acceleration
+	currently it goes from 0 to 100
+	slide off slopes
+
+
+
+
+
+new moves
+	spin dash?
+	longJump
+	triplejump?
+	wall run ir wall jump/kick
+	backflip from crouched
+
+
+	Debug.Log("Flag");
+
+goblin garden or mushroom garden
+	unironically goblins may be too sexy and not fit aesthetic
