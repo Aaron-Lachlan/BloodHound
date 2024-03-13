@@ -10,8 +10,12 @@ public class IEnumeratorss : MonoBehaviour
     void Start()
     {
         StartCoroutine(Name());
-        //creates and starts instance of Name coroutine
+        //OR
+        StartCoroutine("Name");
 
+        //creates and starts instance of Name coroutine
+        //corotines are just a fancy update method that gives 
+        //access to update sensitive functions like Waituntill etc.
     }
 
 
@@ -34,8 +38,9 @@ public class IEnumeratorss : MonoBehaviour
 
         }
 
-        
-        //IEumeratons gotta have 1 yeid return in them, 
+
+        yield return null;
+        //IEumeratons gotta have 1 yeid return null in them, it marks the end of the path
     }
 
 }

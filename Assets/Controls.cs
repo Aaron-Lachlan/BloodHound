@@ -33,13 +33,9 @@ public class Controls : MonoBehaviour
     private float turnSmoothVelocity;
     private bool allowInput = true;
 
-
-
-    public Vector3 slopeSlideVelocity;
-    private bool isSliding;
-
-    private float slideSpeed = 6;
-    private float inpRes;
+    private bool isCrouched;
+    
+    
 
 
 
@@ -100,6 +96,17 @@ public class Controls : MonoBehaviour
             }
 
 
+            if (Input.GetButtonDown("Crouch") && controller.isGrounded)
+            {
+                Crouch();
+               
+            }
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                transform.localScale = new Vector3(1, 1.5f, 1);
+
+            }
+
 
 
             //slam dunk BITCHHHhhhhh
@@ -107,7 +114,7 @@ public class Controls : MonoBehaviour
             {
                 StartCoroutine(SlamDunk());
             }
-
+            
 
 
 
@@ -126,42 +133,6 @@ public class Controls : MonoBehaviour
 
         //Slip();
 
-        if (isSliding && controller.isGrounded)
-        {
-            //Debug.Log("is Sliding");
-            Vector3 velocitya = slopeSlideVelocity;
-            velocitya.y = velocity.y;
-            controller.Move(velocitya * Time.deltaTime);
-
-        }
-
-
-        if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit hit, 5))
-        {
-
-
-            
-            
-                var hitNormal = hit.normal;
-
-                bool isGrounded = (Vector3.Angle(Vector3.up, hitNormal) <= controller.slopeLimit);
-                Vector3 slideDirection;
-
-                if (!isGrounded)
-                {
-                
-                    slideDirection.x = ((1f - hit.normal.y) * hit.normal.x) * slideSpeed;
-                    slideDirection.z = ((1f - hit.normal.y) * hit.normal.z) * slideSpeed;
-                }
-            
-            //Then, after the controller.Move, determine if the controller should be grounded or not:
-
-
-            //Then, before calling controller.Move, add sideways speed to allow it go down:
-
-            //Character sliding of surfaces
-
-        }
 
     }
 
@@ -171,41 +142,28 @@ public class Controls : MonoBehaviour
 
     private void Jump(float extra)
     {
-
         velocity.y = Mathf.Sqrt((jumpHeight + extra) * -2 * gravity);
 
-
     }
 
 
-    private void Slip()
+    private void Crouch()
     {
-        if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit hitInfo, 5))
-        {
-            float angle = Vector3.Angle(hitInfo.normal, Vector3.up);
-
-            if (angle >= controller.slopeLimit)
-            {
-                Debug.Log(angle);
-                slopeSlideVelocity = Vector3.ProjectOnPlane(new Vector3(0, velocity.y, 0), hitInfo.normal);
-                isSliding = true;
-                return;
-            }
-        }
         
-        if (isSliding)
-        {
-            slopeSlideVelocity -= slopeSlideVelocity * Time.deltaTime * 3;
 
-            if (slopeSlideVelocity.magnitude > 1)
-            {
-                return;
-            }
-        }
+
+            transform.localScale = new Vector3(1, 1, 1);
+
+
+
         
-        slopeSlideVelocity = Vector3.zero;
-        isSliding = false;
+
+
     }
+
+
+
+
 
 
     #region SLAM DUNK
