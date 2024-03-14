@@ -5,7 +5,7 @@ to do list
 intro will be black or white depending on time of day
 
 acceleration
-	currently it goes from 0 to 100
+
 	slide off slopes
 	fix jump
 

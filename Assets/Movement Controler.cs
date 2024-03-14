@@ -60,14 +60,14 @@ public class MovementControler : MonoBehaviour
     public float airDrag;
     public int moveMulti;
 
-
+    public float gravity;
 
     void Start()
     {
         if (RB == null)
         {
             RB = GetComponent<Rigidbody>();
-        }
+        } 
         if (orientation == null)
         {
             orientation = GetComponent<Transform>();
@@ -88,9 +88,13 @@ public class MovementControler : MonoBehaviour
 
     private void FixedUpdate()
     {
-       
+        //gravity
+        RB.AddForce(0, gravity, 0);
 
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        //move add up into vector 3
+        Vector3 cameraForward = cameraa.transform.forward;
+        cameraForward.y = 0f;
+        moveDirection = cameraForward.normalized * verticalInput + cameraa.transform.right * horizontalInput;
 
         //Camera rotation
         if (moveDirection.magnitude >= 0.1f)
@@ -105,7 +109,15 @@ public class MovementControler : MonoBehaviour
 
 
         //character movement
-        RB.AddForce(moveDirection.normalized * moveMulti);
+        if (grounded)
+        {
+            RB.AddForce(moveDirection.normalized * moveMulti);
+        }
+        else
+        {
+            RB.AddForce(moveDirection.normalized * 5);
+            
+        }
     }
 
     void InputManager()
@@ -169,9 +181,9 @@ public class MovementControler : MonoBehaviour
                 if (Input.GetButtonDown("Jump"))
                 {
                     RB.drag = airDrag;
-                    currentState = MovementState.Jumping;
                     timeHeldTimer = timeHeld;
                     RB.velocity = new Vector3(RB.velocity.x, RB.velocity.y + jumpForce, RB.velocity.z);
+                    currentState = MovementState.Jumping;
                 }
 
 
@@ -200,6 +212,11 @@ public class MovementControler : MonoBehaviour
                     {
                         currentState = MovementState.Falling;
 
+                    }
+                    if (grounded && timeHeldTimer < (timeHeld / 1.1f))
+                    {
+                        Debug.Log("Trigger");
+                        currentState = MovementState.Falling;
                     }
                 }
                 if (Input.GetButtonUp("Jump"))
