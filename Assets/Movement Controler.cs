@@ -26,6 +26,7 @@ public class MovementControler : MonoBehaviour
     public float decelerationSpeed = 5f;
     public float topSpeed = 12f;
     public float maxSpeed = 12f;
+    public float currentSpeed;
 
     [Header("Jump Stuff")]
     public float jumpForce = 4;
@@ -40,9 +41,9 @@ public class MovementControler : MonoBehaviour
     private Rigidbody RB;
 
     [Header("Ground Check")]
-    public float playerHeight;
     public LayerMask whatIsGround;
     public bool grounded;
+    private float castLength = 0.9f;
 
 
     private Vector3 moveDirection;
@@ -62,6 +63,13 @@ public class MovementControler : MonoBehaviour
 
     public float gravity;
 
+    [Header("Normal Spap")]
+    public AnimationCurve aniCurve;
+    public float time;
+
+    private RaycastHit hit;
+
+
     void Start()
     {
         if (RB == null)
@@ -73,23 +81,24 @@ public class MovementControler : MonoBehaviour
             orientation = GetComponent<Transform>();
         }
         idleTimer = cameraControl.m_YAxisRecentering.m_WaitTime;
+        
     }
+
 
 
     void Update()
     {
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
+        grounded = Physics.SphereCast(transform.position,0.45f , Vector3.down, out hit, castLength, whatIsGround);
         
         InputManager();
         UpdateState();
-
-
+        //OnDrawGizmos();
     }
 
     private void FixedUpdate()
     {
         //gravity
-        RB.AddForce(0, gravity, 0);
+        RB.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
 
         //move add up into vector 3
         Vector3 cameraForward = cameraa.transform.forward;
@@ -101,25 +110,46 @@ public class MovementControler : MonoBehaviour
         {
 
             float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, cameraa.transform.eulerAngles.y, ref turnSmoothVelocity, turnSpeed);
-            Quaternion moveAngle = Quaternion.Euler(0, smoothAngle, 0);
-            RB.MoveRotation(moveAngle);
+            Quaternion moveAngle = Quaternion.Euler(transform.eulerAngles.x, smoothAngle, transform.eulerAngles.z);
+            
+            transform.localRotation = moveAngle;
 
+            
         }
 
 
 
         //character movement
-        if (grounded)
+        if (grounded)/////////////////////////////////////////////////
         {
-            RB.AddForce(moveDirection.normalized * moveMulti);
+           // transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+
+            Quaternion RotationRef = Quaternion.Euler(0,0,0);
+
+            RotationRef = Quaternion.Lerp(transform.rotation, Quaternion.FromToRotation(Vector3.up, hit.normal), aniCurve.Evaluate(time));
+            transform.rotation = Quaternion.Euler(RotationRef.eulerAngles.x, transform.eulerAngles.y, RotationRef.eulerAngles.z);
+
+            
+
+
+
+            RB.AddForce(moveDirection.normalized * 100);
+
         }
         else
         {
             RB.AddForce(moveDirection.normalized * 5);
-            
+
         }
     }
-
+    /*
+    void OnDrawGizmos()
+    {
+        Vector3 test = new Vector3(transform.position.x, transform.position.y - castLength, transform.position.z);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(test, 0.45f);
+    }
+    */
     void InputManager()
     {
         horizontalInput = Input.GetAxisRaw("Horizontal");
@@ -182,7 +212,7 @@ public class MovementControler : MonoBehaviour
                 {
                     RB.drag = airDrag;
                     timeHeldTimer = timeHeld;
-                    RB.velocity = new Vector3(RB.velocity.x, RB.velocity.y + jumpForce, RB.velocity.z);
+                    RB.AddForce(transform.up * jumpForce, ForceMode.Impulse);
                     currentState = MovementState.Jumping;
                 }
 
@@ -215,7 +245,6 @@ public class MovementControler : MonoBehaviour
                     }
                     if (grounded && timeHeldTimer < (timeHeld / 1.1f))
                     {
-                        Debug.Log("Trigger");
                         currentState = MovementState.Falling;
                     }
                 }

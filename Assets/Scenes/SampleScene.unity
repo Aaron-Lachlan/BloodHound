@@ -657,7 +657,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 703320448}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23521787, y: -0.000000007830764, z: 0.0000000018951072, w: 0.9719427}
+  m_LocalRotation: {x: 0.23521785, y: -0.00000001869757, z: 0.00000000452496, w: 0.9719427}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -988,7 +988,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23521787, y: -0.00000003331844, z: 0.000000008063328, w: 0.97194266}
+  m_LocalRotation: {x: 0.23521788, y: -0.000000023650763, z: 0.0000000057236735, w: 0.97194266}
   m_LocalPosition: {x: 0, y: 49, z: -4}
   m_LocalScale: {x: 1, y: 1.26, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1560,7 +1560,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1175963049}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.27568254, y: 0.000000022380817, z: -0.000000006418735, w: 0.96124876}
+  m_LocalRotation: {x: 0.2756825, y: -1e-45, z: -0, w: 0.96124876}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1744,7 +1744,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1285080538}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.19490868, y: 3.8281612e-16, z: 6.3454352e-18, w: 0.98082143}
+  m_LocalRotation: {x: 0.19490868, y: -1e-45, z: -0, w: 0.98082143}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3228,13 +3228,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 1
   stateText: {fileID: 1552092354}
-  accelerationSpeed: 12
+  accelerationSpeed: 5
   decelerationSpeed: 5
   topSpeed: 12
   maxSpeed: 12
+  currentSpeed: 0
   jumpForce: 10
   timeHeld: 3
-  playerHeight: 2.3
   whatIsGround:
     serializedVersion: 2
     m_Bits: 1
@@ -3245,7 +3245,7 @@ MonoBehaviour:
   groundDrag: 6
   airDrag: 0
   moveMulti: 100
-  gravity: -20
+  gravity: 20
 --- !u!96 &2110863585
 TrailRenderer:
   serializedVersion: 3
@@ -3254,7 +3254,7 @@ TrailRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2110863575}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
