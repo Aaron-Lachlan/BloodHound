@@ -2,33 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using Unity.Mathematics;
 
 public class Spedometer : MonoBehaviour
 {
-    public float speed;
+   
     public TextMeshProUGUI texts;
-    
+    private Rigidbody RB;
+
 
     // Start is called before the first frame
     void Start()
     {
-        StartCoroutine(CalcSpeed());
-    }
-
-    IEnumerator CalcSpeed()
-    {
-        bool isPlaying = true;
-
-        while (isPlaying)
+        if (RB == null)
         {
-            Vector3 prevPos = transform.position;
-
-            yield return new WaitForFixedUpdate();
-
-            speed = Mathf.RoundToInt(Vector3.Distance(transform.position, prevPos) / Time.fixedDeltaTime);
-            
-            texts.text = speed.ToString();
-            
-        }   
+            RB = GetComponent<Rigidbody>();
+        }
     }
+    private void FixedUpdate()
+    {
+        float a;
+        a = Mathf.Floor(RB.linearVelocity.magnitude);
+
+        texts.text = a.ToString();
+    }
+
+
 }
