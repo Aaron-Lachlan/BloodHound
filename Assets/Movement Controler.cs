@@ -9,7 +9,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
+
+
 
 namespace _CharacterController
 {
@@ -29,6 +30,7 @@ namespace _CharacterController
             Crouching,
             Sliding,
             SlamDunk,
+            SlamDunkStage2,
 
         }
         public MovementState currentState;
@@ -59,7 +61,7 @@ namespace _CharacterController
         private float timeHeldTimer;
 
         [Header("Gravity")]
-        [SerializeField] private float gravity;
+        [SerializeField] private float currentGravity;
         public float JumpingGravity = 9.8f;
         public float FallingGravity = 40f;
         
@@ -82,6 +84,7 @@ namespace _CharacterController
         public GameObject Parent;
         public GameObject SlidePartileFab;
         private GameObject SlidePartile;
+
 
         [Header("Slope")]
 
@@ -112,8 +115,16 @@ namespace _CharacterController
 
 
         [Header("Slam Dunk")]
-        //public float DunkSpeed = 75f;
-        //bool allowInput = true;
+        public float DunkSpeed = 75f;
+        public float DunkJumpMulti = 250f;
+        
+        public float DunkWindow = 1;
+        float DunkWindowTimer = 1;
+
+        float peakHeight;
+        float groundHeight;
+        float distance;
+       
 
         [Header("Normal Snap and air normal reset")]
         public AnimationCurve AniCurve;
@@ -144,8 +155,8 @@ namespace _CharacterController
             
 
             //Turn back on when build
-            //Cursor.lockState = CursorLockMode.Locked;
-            //Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
 
             RB.freezeRotation = true;
 
@@ -185,7 +196,7 @@ namespace _CharacterController
             SlopeSlide();
 
             //gravity
-            RB.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
+            RB.AddForce(Vector3.down * currentGravity, ForceMode.Acceleration);
 
             CharacterMovement();
 
@@ -194,7 +205,7 @@ namespace _CharacterController
         {
             if (grounded)
             {
-                gravity = JumpingGravity;
+                currentGravity = JumpingGravity;
 
                 if (currentState != MovementState.Sliding)
                 {
@@ -214,7 +225,7 @@ namespace _CharacterController
             {
                 if(!IsJumping )
                 {
-                    gravity = FallingGravity;
+                    currentGravity = FallingGravity;
                 }
                 RB.linearDamping = airDrag;
                 
@@ -412,65 +423,9 @@ namespace _CharacterController
             }
 
             stateText.text = currentState.ToString();
-
+            
         }
 
-        /*
-        
-        #region SLAM DUNK
-        private IEnumerator SlamDunk()
-        {
-            float peakHeight = transform.position.y;
-            allowInput = false;
-
-            //downward force 
-            RB.linearVelocity = new Vector3(0, -DunkSpeed, 0);
-
-            yield return new WaitUntil(() => grounded);
-            float ground = transform.position.y;
-            float distance = peakHeight - ground;
-
-
-            StartCoroutine(ParallelTimer());
-            while (!allowInput)
-            {
-
-                if (JumpAction.WasPressedThisFrame())
-                {
-                    Jump(distance);
-                    allowInput = true;
-                    break;
-
-                }
-
-                yield return null;
-            }
-        }
-
-        private IEnumerator ParallelTimer()
-        {
-            float timerDuration = 1f;
-            float timerElapsed = 0f;
-
-            while (timerElapsed < timerDuration)
-            {
-                if (allowInput)
-                {
-                    yield break;
-                }
-
-                timerElapsed += Time.fixedDeltaTime;
-                yield return null;
-            }
-
-            allowInput = true;
-
-        }
-        */
-
-
-
-        //#endregion
 
         #region Jump Movement
 
@@ -479,18 +434,25 @@ namespace _CharacterController
             
             if (CanJump & context.started)
             {
-                
-                
 
-                
-                timeHeldTimer = timeHeld;
-                RB.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+                if(currentState == MovementState.SlamDunkStage2)
+                {
+                    //this could be better
+                    float test = distance*DunkJumpMulti;
+
+                    RB.AddForce(transform.up * ((jumpForce*2) + test), ForceMode.Impulse);
+                    
+                }
+                else 
+                {
+                    timeHeldTimer = timeHeld;
+                    RB.AddForce(transform.up * jumpForce, ForceMode.Impulse);
 
                 
                 IsJumping = true;
                 currentState = MovementState.Jumping;
 
-
+                }
             }
             if (context.canceled)
             {
@@ -525,8 +487,10 @@ namespace _CharacterController
             }
 
         }
-
         #endregion
+
+        #region Crouch Movement
+
         public void OnCrouch(InputAction.CallbackContext context)
         {
             if (CanCrouch)
@@ -535,7 +499,20 @@ namespace _CharacterController
                 {
                     IsCrouching = true;
 
-                    currentState = MovementState.Crouching;
+                    if (!grounded)
+                    {
+
+                        SlamDunk();
+                        
+
+                    }
+                    else
+                    {
+                        
+
+                        currentState = MovementState.Crouching;
+                    }
+
                     
                     
                 }
@@ -554,6 +531,45 @@ namespace _CharacterController
             }
             
         }
+        #endregion
+        #region SlamDunk
+
+        public void SlamDunk()
+        {
+            currentState = MovementState.SlamDunk;
+            CanJump = false;
+            
+
+            peakHeight = transform.position.y;
+
+
+            //downward force 
+            RB.linearVelocity = new Vector3(0, -DunkSpeed, 0);
+
+
+        }
+        public void SlamDunkStage2()
+        {
+            groundHeight = transform.position.y;
+            distance = peakHeight - groundHeight;
+            CanJump = true;
+
+        }
+        public void SlamDunkTimer()
+        {
+            
+
+            DunkWindowTimer -= Time.fixedDeltaTime;
+            
+
+            if (DunkWindowTimer <= 0)
+            {
+                DunkWindowTimer = DunkWindow;
+                currentState = MovementState.Crouching;
+            }
+        }
+        #endregion
+
 
         #region WASD Movement
         public void OnMove(InputAction.CallbackContext context)
@@ -769,9 +785,20 @@ namespace _CharacterController
 
                     //to do move slamdunk to here
 
+                    if (grounded)
+                    {
+                        currentState = MovementState.SlamDunkStage2;
 
+                    }
                     break;
 
+                case MovementState.SlamDunkStage2:
+
+
+                    SlamDunkStage2();
+                    SlamDunkTimer();
+
+                    break;
 
                 default:
 
@@ -785,45 +812,23 @@ namespace _CharacterController
             //movement 
             //counter movement (dont think its needed but may have use case)
             //deStick from wall when wall is 90 degress and under a speed limit
-
-            //slam dunk
-            // no input timer broken 
-            //move into state
+            //the character doesn't slide against walls. You just hit and stop. The velocity isn't redirected
+            //switching drag types use  ani curve, right now its snapping to the values
 
 
 
 
 
-            
+
+
 
 
 
             /*
             added
-                Normal stuff
-                    normal allining to the ground
-                    normal allinging when in air to world space
-                    rotation now works independent from normal alling
-                    jump is normal allined
-                movement
-                    moved to new input system with event callbacks
-                    RB movement is now applyed local and afected by normal allining
-                    added movement state
-                    added crouch state
-                    movement inputs are kept track off, so you can hold crouch, jump to jump/fall state, and when landing returning to crouch state
-                debug Gismoz!!!
-                idle
-                    Stage 2 with spin
-                new input system
-                    rebuild of switch and how input events change that
-                Visuals
-                    crouch
-                    slide sparks
-                updated to CinMachine 3.1
-                switch to URP render pipeline
-                fixed camera turning having a little feedback loop
-                just made camera a little better
-            Bugs: alot
+               rewright of slam dunk
+             teleporter prefab
+            tutorial level
 
             */
         }
